@@ -8,7 +8,7 @@ import store from './src/redux/store';
 
 const Stack = createNativeStackNavigator();
 
-function App() {
+function AppNavaigation() {
   return (
     <Provider store={store}>
     <NavigationContainer>
@@ -38,4 +38,4 @@ function App() {
     </Provider>
   );
 }
-export default App;
+export default AppNavaigation;
