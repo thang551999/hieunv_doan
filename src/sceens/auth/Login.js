@@ -46,13 +46,18 @@ export default function Login({ navigation }) {
   };
   const doLogin = async () => {
     setLoading(true);
-    const data = await login(userName, password);
+    try {
+      const data = await login(userName, password);
     if (!data.data?.token) {
       alert(data.data);
     } else {
       dispathLogin(data.data)
       navigation.navigate("ListForm");
     }
+    } catch (error) {
+      alert(error)
+    }
+    
     setLoading(false);
   };
   const renderShowHidePassword = () => {

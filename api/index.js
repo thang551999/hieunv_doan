@@ -1,5 +1,5 @@
 import axios from "axios";
-const baseURL = "http://192.168.1.214:3000";
+const baseURL = "http://192.168.1.196:3000";
 axios.defaults.baseURL = baseURL;
 export const login = async (email, password) => {
   try {
@@ -29,29 +29,68 @@ export const resgister = async (body) => {
 };
 export const getForms = async (token) => {
   try {
-    console.log(32 ,'api');
-    console.log(token,34);
-    let res=  await axios.get("/forms", {
+    console.log(32, "api");
+    console.log(token, 34);
+    let res = await axios.get("/forms", {
       headers: {
-        Authorization: 'Bearer '+token,
+        Authorization: "Bearer " + token,
       },
     });
-    return res
+    return res;
   } catch (error) {
     console.log(error);
-   return Promise.reject(error);
+    return Promise.reject(error);
   }
 };
 
-export const createForms = async () => {
+export const createForms = async (token,body) => {
   try {
-    return await axios.post("/forms", {
+    return await axios.post("/forms",body, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
   } catch (error) {
-   return Promise.reject(error);
+    return Promise.reject(error);
+  }
+};
+
+export const getForm = async (token, id) => {
+  console.log(token, id);
+  try {
+    return await axios.get(`/forms/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
+
+export const deleteForm = async (id, token) => {
+  console.log(token, id,'delete');
+  try {
+    return await axios.delete("/forms/" + id, {
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    });
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
+
+export const updateForm = async (token, id) => {
+  console.log(token, id);
+  try {
+    return await axios.patch(`/forms/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+    return Promise.reject(error);
   }
 };
 

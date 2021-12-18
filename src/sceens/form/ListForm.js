@@ -14,6 +14,7 @@ import { useSelector } from "react-redux";
 
 export default function ListForm({ navigation }) {
   const token = useSelector((store) => store.login);
+  const {reload} = useSelector((store) => store.formReducer);
   const [forms, setForms] = useState([]);
   const [textSearch, setTextSearch] = useState("");
   const getForm = async () => {
@@ -24,7 +25,7 @@ export default function ListForm({ navigation }) {
   };
   useEffect(() => {
     getForm();
-  }, []);
+  }, [token.token,reload]);
   return (
     <View
       style={{
@@ -36,7 +37,7 @@ export default function ListForm({ navigation }) {
         style={StyleSheet.absoluteFillObject}
         blurRadius={18}
       />
-      <SafeAreaView>
+      <SafeAreaView style={{flex:1}}>
         <TextInput
           placeholder="Tìm kiếm biểu mẫu ..."
           style={{
@@ -56,10 +57,12 @@ export default function ListForm({ navigation }) {
             marginBottom: 10,
           }}
         >
-          Danh sách biểu mẫu{" "}
+          Danh sách biểu mẫu
         </Text>
-        <FlatlistComponent data={forms} />
-
+        <View style={{flex:1}}>
+        <FlatlistComponent data={forms} navigation={navigation}/>
+        </View>
+        <View>
         <TouchableOpacity
           style={styles.buttonfloat}
           onPress={() => {
@@ -71,6 +74,7 @@ export default function ListForm({ navigation }) {
             style={styles.callPhone}
           />
         </TouchableOpacity>
+        </View>
       </SafeAreaView>
     </View>
   );
@@ -82,7 +86,7 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     backgroundColor: "rgb(37, 150, 190)",
     position: "absolute",
-    bottom: 150,
+    bottom: 40,
     right: 10,
     justifyContent: "center",
     alignItems: "center",
