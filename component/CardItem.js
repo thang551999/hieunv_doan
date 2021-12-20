@@ -65,7 +65,9 @@ const CardItemListView = ({
           navigation.navigate('FormDetails',{formId:item.item.id})
         }}
       >
-        {loading && <ActivityIndicator size="large" style={{ marginLeft: 50 }} />}
+        {loading && (
+          <ActivityIndicator size="large" style={{ marginLeft: 50 }} />
+        )}
         {!loading && (
           <>
             <Image
@@ -104,7 +106,7 @@ const CardItemListView = ({
                 >
                   <TouchableOpacity
                     onPress={() => {
-                      navigation.navigate('EditForm')
+                      navigation.navigate("EditForm");
                     }}
                   >
                     <Image source={require("@assets/pen1.png")} />

@@ -1,5 +1,5 @@
 import axios from "axios";
-const baseURL = "http://192.168.1.196:3000";
+const baseURL = "http://192.168.1.214:3000";
 axios.defaults.baseURL = baseURL;
 export const login = async (email, password) => {
   try {
