@@ -7,6 +7,8 @@ import {
   TextInput,
   TouchableOpacity,
   Text,
+  StatusBar,
+  Platform
 } from "react-native";
 import { getForms } from "../../../api/index";
 import FlatlistComponent from "../../../component/ListCard";
@@ -23,6 +25,20 @@ export default function ListForm({ navigation }) {
       setForms(dataForms.data);
     }
   };
+  const renderStatusBar = () => {
+    if (Platform.OS === "ios") {
+      return <SafeAreaView style={styles.topSafeArea} />;
+    } else {
+      return (
+        <StatusBar
+          barStyle="light-content"
+          backgroundColor="transparent"
+          translucent={true}
+         
+        />
+      );
+    }
+  };
   useEffect(() => {
     getForm();
   }, [token.token,reload]);
@@ -30,14 +46,17 @@ export default function ListForm({ navigation }) {
     <View
       style={{
         flex: 1,
+        paddingHorizontal:5
       }}
     >
+      
       <Image
         source={require("@assets/background.jpeg")}
         style={StyleSheet.absoluteFillObject}
         blurRadius={18}
       />
-      <SafeAreaView style={{flex:1}}>
+      <SafeAreaView style={{flex:1,marginTop:20}}>
+      {renderStatusBar()}
         <TextInput
           placeholder="Tìm kiếm biểu mẫu ..."
           style={{
@@ -91,6 +110,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 20,
+  },
+  topSafeArea: {
+    flex: 0,
   },
   header: {
     height: 40,

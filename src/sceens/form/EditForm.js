@@ -8,19 +8,21 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  StatusBar,
+  Platform,
 } from "react-native";
-import { useSelector,useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { Modal, Portal, Button, Provider } from "react-native-paper";
 import RadioButtonRN from "radio-buttons-react-native";
 import Checkbox from "expo-checkbox";
-import {createForms} from '@api'
-import {DeleteFormAction} from '../../redux/action'
+import {  updateForm } from "@api";
+import { DeleteFormAction } from "../../redux/action";
 
 var nameField = "";
-export default function CreateForms({navigation}) {
+export default function EditForm({ route, navigation }) {
   const [name, setName] = useState("");
   const [formInput, setFormInput] = useState([]);
-  const { groups,token} = useSelector((store) => store.login);
+  const { groups, token } = useSelector((store) => store.login);
   const [modalVisible, setModalVisible] = useState(false);
   const [typeField, setTypeField] = useState("");
   const [value, setValueField] = useState("");
@@ -39,8 +41,73 @@ export default function CreateForms({navigation}) {
       };
     })
   );
+  const onUpdate = async ({navigation}) => {
+    const groupR = JSON.parse(JSON.stringify(groupRole)).map((e) => {
+      return e.groupsForm.filter((val) => val.selected === true);
+    });
 
-  const Header = () => {
+    let body;
+    if (groupR.flat().length !== 0) {
+      const groupsForm = groupR.flat().map((e) => {
+        return { groups: e.groups, role: e.role };
+      });
+      body = {
+        name,
+        formInput,
+        groupsForm,
+      };
+    } else {
+      body = {
+        name,
+        formInput,
+      };
+    }
+    try {
+      await updateForm(token, route.params.form.id, body);
+      navigation.replace("ListForm")
+    } catch (error) {
+      alert('Ban khong co quyen')
+      console.log(error);
+    }
+  };
+  useEffect(() => {
+    setName(route.params.form.name);
+    setFormInput(route.params.form.formInput);
+    const newGroupRole = groupRole.map((e) => {
+      const role = e.groupsForm.map((val) => {
+        const a = route.params.form.groupsForm
+          .flat()
+          .find((e) => (e.groups.id = val.groups && e.role == val.role));
+        if (a) {
+          return {
+            groups: val.groups,
+            role: val.role,
+            selected: true,
+          };
+        }
+        return val;
+      });
+      return {
+        groupsForm: role,
+      };
+    });
+    setGroupRole(newGroupRole);
+  }, [token]);
+  const renderStatusBar = () => {
+    if (Platform.OS === "ios") {
+      return <SafeAreaView style={styles.topSafeArea} />;
+    } else {
+      return (
+        <StatusBar
+          barStyle="light-content"
+          backgroundColor="rgb(37, 150, 190)"
+          translucent={true}
+        />
+      );
+    }
+  };
+
+  const Header = ({ navigation }) => {
     return (
       <View
         style={{
@@ -50,9 +117,12 @@ export default function CreateForms({navigation}) {
           justifyContent: "space-between",
           alignItems: "center",
           padding: 10,
+          marginTop: 29,
         }}
       >
-        <Image source={require("@assets/back.png")} />
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Image source={require("@assets/back.png")} />
+        </TouchableOpacity>
         <Text
           style={{
             color: "white",
@@ -61,51 +131,57 @@ export default function CreateForms({navigation}) {
             fontWeight: "700",
           }}
         >
-          Thay đổi biểu mẫu 
+         Chỉnh sửa biểu mẫu
         </Text>
         <TouchableOpacity
           style={{ padding: 20 }}
-          onPress={() => onCreateForm()}
+          onPress={() => onUpdate(navigation)}
         >
           <Image source={require("@assets/check.png")} />
         </TouchableOpacity>
       </View>
     );
   };
-  const onCreateForm = async() => {
+  const onCreateForm = async () => {
     const groupR = JSON.parse(JSON.stringify(groupRole)).map((e) => {
       return e.groupsForm.filter((val) => val.selected === true);
     });
 
-    
-    let body
+    let body;
     if (groupR.flat().length !== 0) {
       const groupsForm = groupR.flat().map((e) => {
         return { groups: e.groups, role: e.role };
       });
-       body ={
+      body = {
         name,
         formInput,
-        groupsForm
-      }
-    }else{
-       body ={
+        groupsForm,
+      };
+    } else {
+      body = {
         name,
         formInput,
-      }
+      };
     }
-   try {
-     const data = await editForms(token,body)
-     alert('Ban Tao thanh cong form ')
-     navigation.push('ListForm')
-   } catch (error) {
-    alert('Ban thu lai sau')
-   }
-    console.log(body,93);
-
-    // const groupsForms =groupRole.groupsForm.map(groupF=>{
-
-    // })
+    try {
+      const data = await createForms(token, body);
+      alert("Ban Tao thanh cong form ");
+      setName(""), setFormInput([]);
+      setGroupRole(
+        groups.map((e) => {
+          return {
+            groupsForm: [
+              { groups: e.group.id, role: "G", selected: true },
+              { groups: e.group.id, role: "U", selected: false },
+              { groups: e.group.id, role: "D", selected: false },
+            ],
+          };
+        })
+      );
+      navigation.push("ListForm");
+    } catch (error) {
+      alert("Ban thu lai sau");
+    }
   };
   const Footer = () => {
     return (
@@ -205,7 +281,8 @@ export default function CreateForms({navigation}) {
           blurRadius={50}
         />
         <SafeAreaView style={styles.container}>
-          <Header></Header>
+          {renderStatusBar()}
+          <Header navigation={navigation}></Header>
           <View style={{ flex: 1 }}>
             <View
               style={{
@@ -225,6 +302,7 @@ export default function CreateForms({navigation}) {
                 Tên Biểu Mẫu:{" "}
               </Text>
               <TextInput
+                value={name}
                 onChangeText={(text) => setName(text)}
                 style={{
                   backgroundColor: "white",

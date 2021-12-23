@@ -5,15 +5,17 @@ import {
   StyleSheet,
   Image,
   SafeAreaView,
-  TextInput,
-  TouchableOpacity,
+  StatusBar,
+  Platform,
   ScrollView,
+  TouchableOpacity,
+  Alert
 } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { Modal, Portal, Button, Provider } from "react-native-paper";
 import RadioButtonRN from "radio-buttons-react-native";
 import Checkbox from "expo-checkbox";
-import { createForms } from "@api";
+import { createForms,deleteForm } from "@api";
 import { DeleteFormAction } from "../../redux/action";
 import { getForm } from "../../../api";
 import _ from "lodash";
@@ -42,23 +44,44 @@ export default function formDetails({ navigation, route }) {
       };
     })
   );
+  const onDeleteForm = async () => {
+    try {
+     await deleteForm(dataForm.id, token);
+     alert("Bạn xoá thành công");
+     navigation.replace("ListForm")
+    } catch (error) {
+      console.log(error);
+      alert("Bạn không được cấp quyền xoá ");
+    }
+    
+  };
   const onLoadForm = async () => {
     try {
       const { formId } = route.params;
-      console.log(formId);
       const data = await getForm(token, formId);
-      console.log(data.data, 39);
       setDataForm(data.data);
     } catch (error) {
       console.log(error);
     }
   };
-
+  const renderStatusBar = () => {
+    if (Platform.OS === "ios") {
+      return <SafeAreaView style={styles.topSafeArea} />;
+    } else {
+      return (
+        <StatusBar
+          barStyle="light-content"
+          backgroundColor="rgb(37, 150, 190)"
+          translucent={true}
+        />
+      );
+    }
+  };
   useEffect(() => {
     onLoadForm();
   }, [token]);
 
-  const Header = () => {
+  const Header = ({ navigation }) => {
     return (
       <View
         style={{
@@ -68,9 +91,12 @@ export default function formDetails({ navigation, route }) {
           justifyContent: "space-between",
           alignItems: "center",
           padding: 10,
+          marginTop: 29,
         }}
       >
-        <Image source={require("@assets/back.png")} />
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Image source={require("@assets/back.png")} />
+        </TouchableOpacity>
         <Text
           style={{
             flex: 1,
@@ -103,16 +129,17 @@ export default function formDetails({ navigation, route }) {
 
   return (
     <Provider>
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <Image
           source={require("@assets/background.jpeg")}
           style={StyleSheet.absoluteFillObject}
           blurRadius={50}
         />
+        {renderStatusBar()}
         <SafeAreaView style={styles.container}>
-          <Header></Header>
+          <Header navigation={navigation}></Header>
           {!_.isEmpty(dataForm) && (
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1 , paddingHorizontal:5}}>
               <View
                 style={{
                   borderBottomColor: "rgb(37, 150, 190)",
@@ -203,6 +230,7 @@ export default function formDetails({ navigation, route }) {
                             fontWeight: "200",
                             margin: 2,
                             color: "white",
+                            paddingHorizontal:5
                           }}
                         >
                           {e.groups.name} : {e.role}
@@ -214,14 +242,75 @@ export default function formDetails({ navigation, route }) {
               </ScrollView>
             </View>
           )}
+          <View
+            style={{ flexDirection: "row", justifyContent: "space-around" }}
+          >
+            <TouchableOpacity
+              style={styles.buttonContainer}
+              onPress={() => {
+                navigation.navigate("EditForm", { form: dataForm});
+               
+              }}
+            >
+              <Text style={styles.loginText}>Edit Form</Text>
+              <Image
+                source={require("@assets/pen1.png")}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.buttonContainer}
+              onPress={() =>
+                Alert.alert("Bạn chắc chắn muốn xoá biểu mẫu", "", [
+                  {
+                    text: "Cancel",
+                    onPress: () => console.log("Cancel Pressed"),
+                    style: "cancel",
+                  },
+                  { text: "OK", onPress: () => onDeleteForm() },
+                ])
+              }
+            >
+              <Text style={styles.loginText}>Xoá Form</Text>
+              <Image
+                style={{ marginLeft: 5 }}
+                source={require("@assets/trash1.png")}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+          </View>
         </SafeAreaView>
-      </View>
+      </SafeAreaView>
     </Provider>
   );
 }
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  loginText: {
+    justifyContent: "center",
+    alignItems: "center",
+    color: "white",
+    fontSize: 20,
+    marginHorizontal: 10,
+  },
+  buttonContainer: {
+    flex: 1,
+    marginVertical: 20,
+    marginHorizontal: 10,
+    // width: Constant.width7Unit,
+    height: 50,
+    // top: Constant.height3Unit,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgb(37, 150, 190)",
+    borderRadius: 30,
+
+    borderColor: "white",
+    borderWidth: 1,
+    flexDirection: "row",
+    // padding: 10,
   },
   item: {
     height: 40,

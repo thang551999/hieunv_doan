@@ -62,7 +62,7 @@ const CardItemListView = ({
       <TouchableOpacity
         style={{ flexDirection: "row", flex: 1 }}
         onPress={() => {
-          navigation.navigate('FormDetails',{formId:item.item.id})
+          navigation.navigate("FormDetails", { formId: item.item.id });
         }}
       >
         {loading && (
@@ -73,7 +73,7 @@ const CardItemListView = ({
             <Image
               style={{ height: 80, flex: 1, margin: 20 }}
               source={require("@assets/imageforms.png")}
-              resizeMode={"cover"}
+              resizeMode='contain'
             />
             <View
               style={{
@@ -104,12 +104,13 @@ const CardItemListView = ({
                     marginBottom: 5,
                   }}
                 >
-                  <TouchableOpacity
+                  {/* <TouchableOpacity
                     onPress={() => {
-                      navigation.navigate("EditForm");
+                      navigation.navigate("EditForm", { formId: item.item.id });
                     }}
+                    
                   >
-                    <Image source={require("@assets/pen1.png")} />
+                    <Image source={require("@assets/pen1.png")}  resizeMode='contain'/>
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() =>
@@ -126,8 +127,9 @@ const CardItemListView = ({
                     <Image
                       style={{ marginLeft: 10 }}
                       source={require("@assets/trash1.png")}
+                      resizeMode='contain'
                     />
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
                 </View>
               )}
               <Image />

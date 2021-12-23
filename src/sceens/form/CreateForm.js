@@ -8,6 +8,8 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  StatusBar,
+  Platform
 } from "react-native";
 import { useSelector,useDispatch } from "react-redux";
 import { Modal, Portal, Button, Provider } from "react-native-paper";
@@ -38,9 +40,22 @@ export default function CreateForms({navigation}) {
         ],
       };
     })
-  );
+  ); 
+   const renderStatusBar = () => {
+    if (Platform.OS === "ios") {
+      return <SafeAreaView style={styles.topSafeArea} />;
+    } else {
+      return (
+        <StatusBar
+          barStyle="light-content"
+          backgroundColor="rgb(37, 150, 190)"
+          translucent={true}
+        />
+      );
+    }
+  };
 
-  const Header = () => {
+  const Header = ({navigation}) => {
     return (
       <View
         style={{
@@ -50,9 +65,12 @@ export default function CreateForms({navigation}) {
           justifyContent: "space-between",
           alignItems: "center",
           padding: 10,
+          marginTop:29
         }}
       >
+        <TouchableOpacity onPress={()=>navigation.goBack()}>
         <Image source={require("@assets/back.png")} />
+        </TouchableOpacity>
         <Text
           style={{
             color: "white",
@@ -212,7 +230,8 @@ export default function CreateForms({navigation}) {
           blurRadius={50}
         />
         <SafeAreaView style={styles.container}>
-          <Header></Header>
+          {renderStatusBar()}
+          <Header navigation={navigation}></Header>
           <View style={{ flex: 1 }}>
             <View
               style={{

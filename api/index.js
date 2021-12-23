@@ -1,5 +1,5 @@
 import axios from "axios";
-const baseURL = "http://192.168.1.214:3000";
+const baseURL = "http://192.168.1.6:3000";
 axios.defaults.baseURL = baseURL;
 export const login = async (email, password) => {
   try {
@@ -81,15 +81,16 @@ export const deleteForm = async (id, token) => {
   }
 };
 
-export const updateForm = async (token, id) => {
-  console.log(token, id);
+export const updateForm = async (token, id,body) => {
+  console.log(token, id,body);
   try {
-    return await axios.patch(`/forms/${id}`, {
+    return await axios.patch(`/forms/${id}`, body,{
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
   } catch (error) {
+    console.log(93,'lói');
     return Promise.reject(error);
   }
 };
