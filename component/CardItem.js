@@ -44,7 +44,6 @@ const CardItemListView = ({
       dispathLogin(item.item.id);
       alert("Bạn xoá thành công");
     } catch (error) {
-      console.log(error);
       alert("Bạn không được cấp quyền xoá ");
     }
     setLoading(false);
@@ -62,7 +61,7 @@ const CardItemListView = ({
       <TouchableOpacity
         style={{ flexDirection: "row", flex: 1 }}
         onPress={() => {
-          navigation.navigate("FormDetails", { formId: item.item.id });
+          navigation.replace("FormDetails", { formId: item.item.id });
         }}
       >
         {loading && (

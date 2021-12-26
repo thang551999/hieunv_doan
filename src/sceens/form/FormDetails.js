@@ -50,7 +50,6 @@ export default function formDetails({ navigation, route }) {
      alert("Bạn xoá thành công");
      navigation.replace("ListForm")
     } catch (error) {
-      console.log(error);
       alert("Bạn không được cấp quyền xoá ");
     }
     
@@ -61,7 +60,6 @@ export default function formDetails({ navigation, route }) {
       const data = await getForm(token, formId);
       setDataForm(data.data);
     } catch (error) {
-      console.log(error);
     }
   };
   const renderStatusBar = () => {
@@ -94,7 +92,7 @@ export default function formDetails({ navigation, route }) {
           marginTop: 29,
         }}
       >
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={() => navigation.replace("ListForm")}>
           <Image source={require("@assets/back.png")} />
         </TouchableOpacity>
         <Text
@@ -178,7 +176,7 @@ export default function formDetails({ navigation, route }) {
                     }}
                   >
                     Ngày cập nhật :{" "}
-                    {new Date(dataForm.createdAt).toLocaleString()}
+                    {new Date(dataForm.updatedAt).toLocaleString()}
                   </Text>
                 )}
               </View>

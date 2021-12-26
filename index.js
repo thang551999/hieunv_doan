@@ -26,9 +26,21 @@ export default class AppContainer extends React.Component {
 
   async _loadAssetsAsync() {
     const imageAssets = cacheImages([
-      'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png',
-      require('./assets/images/circle.jpg'),
+      require("@assets/imageforms.png"),
+      require("@assets/showPassword.png"),
+      require("@assets/hidePassword.png"),
+      require("@assets/background.jpeg"),
+      require("@assets/username.png"),
+      require("@assets/clearData.png"),
+      require("@assets/password.png"),
+      require("@assets/clearData.png"),
+      require("@assets/iconlogin.png"),
+      require("@assets/back.png"),
+      require("@assets/check.png")
+
+
     ]);
+
 
     const fontAssets = cacheFonts([FontAwesome.font]);
 

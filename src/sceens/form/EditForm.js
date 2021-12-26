@@ -10,26 +10,52 @@ import {
   ScrollView,
   StatusBar,
   Platform,
+  Alert,
 } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { Modal, Portal, Button, Provider } from "react-native-paper";
 import RadioButtonRN from "radio-buttons-react-native";
 import Checkbox from "expo-checkbox";
-import {  updateForm } from "@api";
-import { DeleteFormAction } from "../../redux/action";
+import {
+  updateForm,
+  deleteFormInput,
+  deleteRoleForm,
+  createRoleForm,
+} from "@api";
+import RadioButtonGroup, { RadioButtonItem } from "expo-radio-button";
+import _ from "lodash";
 
 var nameField = "";
+const formType = [
+  {
+    label: "Number",
+    value: 1,
+  },
+  {
+    label: "BarCode",
+    value: 2,
+  },
+  {
+    label: "Text",
+    value: 2,
+  },
+  {
+    label: "Date",
+    value: 3,
+  },
+];
 export default function EditForm({ route, navigation }) {
   const [name, setName] = useState("");
   const [formInput, setFormInput] = useState([]);
   const { groups, token } = useSelector((store) => store.login);
   const [modalVisible, setModalVisible] = useState(false);
+  const [modalFieldVisible, setModalFieldVisible] = useState(false);
   const [typeField, setTypeField] = useState("");
   const [value, setValueField] = useState("");
-  const [isSelected, setSelection] = useState(false);
-  const [toggleCheckBox, setToggleCheckBox] = useState(false);
-  const dispatch = useDispatch();
-  const dispathReload = (note) => dispatch(DeleteFormAction(note));
+  const [roleDelete, setRoleDelete] = useState([]);
+  const [formInputSelected, setFormInputSelected] = useState({});
+  const [current, setCurrent] = useState("test");
+
   const [groupRole, setGroupRole] = useState(
     groups.map((e) => {
       return {
@@ -41,48 +67,82 @@ export default function EditForm({ route, navigation }) {
       };
     })
   );
-  const onUpdate = async ({navigation}) => {
-    const groupR = JSON.parse(JSON.stringify(groupRole)).map((e) => {
-      return e.groupsForm.filter((val) => val.selected === true);
-    });
+  const onDeleteFormInput = async (id) => {
+    await deleteFormInput(id, token, route.params.form.id);
+    const newFormInputs = JSON.parse(JSON.stringify(formInput));
+    const index = newFormInputs.findIndex((e) => e.id == id);
+    newFormInputs.splice(index, 1);
+    setFormInput(newFormInputs);
+  };
 
-    let body;
-    if (groupR.flat().length !== 0) {
-      const groupsForm = groupR.flat().map((e) => {
-        return { groups: e.groups, role: e.role };
-      });
-      body = {
-        name,
-        formInput,
-        groupsForm,
-      };
-    } else {
-      body = {
-        name,
-        formInput,
-      };
-    }
+  const checkRole = async () => {
+    // Kiểm tra role ban đầu với role hiện tại
+    // Lay role đã xoá quyền
+    const deleteRole = groupRole
+      .map((e) => e.groupsForm)
+      .flat()
+      .filter((e) => e.selected == false && e.id != null);
+    console.log(deleteRole, 10);
+    await Promise.all(
+      deleteRole.map((e) => deleteRoleForm(e.id, token, route.params.form.id))
+    );
+    // Lấy role thêm mới
+    const newRole = groupRole
+      .map((e) => e.groupsForm)
+      .flat()
+      .filter((e) => e.selected == true && e.id == null);
+    console.log(newRole, 10);
+    await Promise.all(
+      newRole.map((e) =>
+        createRoleForm(e.role, token, route.params.form.id, e.groups)
+      )
+    );
+  };
+
+  const onUpdate = async () => {
+    const body = {
+      name,
+      formInput,
+    };
     try {
-      await updateForm(token, route.params.form.id, body);
-      navigation.replace("ListForm")
+      const data = await updateForm(token, route.params.form.id, body);
+      await checkRole();
+      navigation.replace("ListForm");
     } catch (error) {
-      alert('Ban khong co quyen')
-      console.log(error);
+      alert("Ban khong co quyen");
+    }
+  };
+  const onSubmit = async () => {
+    if (modalVisible) {
+      const formInputs = {
+        label: nameField,
+        value: value,
+        type: typeField,
+      };
+      setFormInput([...formInput, formInputs]);
+      setModalVisible(false);
+      nameField = "";
+    } else {
+      setModalVisible(true);
     }
   };
   useEffect(() => {
     setName(route.params.form.name);
     setFormInput(route.params.form.formInput);
+    console.log(groupRole, 133333);
+    console.log(route.params.form.groupsForm, 144444);
     const newGroupRole = groupRole.map((e) => {
       const role = e.groupsForm.map((val) => {
-        const a = route.params.form.groupsForm
-          .flat()
-          .find((e) => (e.groups.id = val.groups && e.role == val.role));
+        const a = route.params.form.groupsForm.find(
+          (e) => e.groups.id == val.groups && e.role == val.role
+        );
+        // console.log(a,140);
         if (a) {
           return {
             groups: val.groups,
             role: val.role,
             selected: true,
+            id: a.id,
           };
         }
         return val;
@@ -91,6 +151,7 @@ export default function EditForm({ route, navigation }) {
         groupsForm: role,
       };
     });
+
     setGroupRole(newGroupRole);
   }, [token]);
   const renderStatusBar = () => {
@@ -106,33 +167,13 @@ export default function EditForm({ route, navigation }) {
       );
     }
   };
-
   const Header = ({ navigation }) => {
     return (
-      <View
-        style={{
-          height: 50,
-          backgroundColor: "rgb(37, 150, 190)",
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: 10,
-          marginTop: 29,
-        }}
-      >
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.replace("ListForm")}>
           <Image source={require("@assets/back.png")} />
         </TouchableOpacity>
-        <Text
-          style={{
-            color: "white",
-            textAlign: "center",
-            fontSize: 20,
-            fontWeight: "700",
-          }}
-        >
-         Chỉnh sửa biểu mẫu
-        </Text>
+        <Text style={styles.textHeader}>Chỉnh sửa biểu mẫu</Text>
         <TouchableOpacity
           style={{ padding: 20 }}
           onPress={() => onUpdate(navigation)}
@@ -142,99 +183,14 @@ export default function EditForm({ route, navigation }) {
       </View>
     );
   };
-  const onCreateForm = async () => {
-    const groupR = JSON.parse(JSON.stringify(groupRole)).map((e) => {
-      return e.groupsForm.filter((val) => val.selected === true);
-    });
 
-    let body;
-    if (groupR.flat().length !== 0) {
-      const groupsForm = groupR.flat().map((e) => {
-        return { groups: e.groups, role: e.role };
-      });
-      body = {
-        name,
-        formInput,
-        groupsForm,
-      };
-    } else {
-      body = {
-        name,
-        formInput,
-      };
-    }
-    try {
-      const data = await createForms(token, body);
-      alert("Ban Tao thanh cong form ");
-      setName(""), setFormInput([]);
-      setGroupRole(
-        groups.map((e) => {
-          return {
-            groupsForm: [
-              { groups: e.group.id, role: "G", selected: true },
-              { groups: e.group.id, role: "U", selected: false },
-              { groups: e.group.id, role: "D", selected: false },
-            ],
-          };
-        })
-      );
-      navigation.push("ListForm");
-    } catch (error) {
-      alert("Ban thu lai sau");
-    }
-  };
   const Footer = () => {
     return (
-      <TouchableOpacity
-        style={{
-          height: 50,
-          backgroundColor: "rgb(37, 150, 190)",
-          justifyContent: "center",
-          marginTop: 10,
-        }}
-        onPress={() => {
-          if (modalVisible) {
-            const formInputs = {
-              label: nameField,
-              value: value,
-              type: typeField,
-            };
-
-            setFormInput([...formInput, formInputs]);
-            setModalVisible(false);
-            nameField = "";
-          } else {
-            setModalVisible(true);
-          }
-        }}
-      >
-        <Text
-          style={{
-            color: "white",
-            textAlign: "center",
-            fontSize: 20,
-            fontWeight: "700",
-          }}
-        >
-          Thêm trường
-        </Text>
+      <TouchableOpacity style={styles.footer} onPress={() => onSubmit()}>
+        <Text style={styles.textHeader}>Thêm trường</Text>
       </TouchableOpacity>
     );
   };
-  const formType = [
-    {
-      label: "Number",
-    },
-    {
-      label: "BarCode",
-    },
-    {
-      label: "Text",
-    },
-    {
-      label: "Date",
-    },
-  ];
 
   const containerStyle = { backgroundColor: "white", padding: 20 };
   const ModalField = () => {
@@ -242,7 +198,10 @@ export default function EditForm({ route, navigation }) {
       <Portal>
         <Modal
           visible={modalVisible}
-          onDismiss={() => setModalVisible(false)}
+          onDismiss={() => {
+            setModalVisible(false);
+            nameField = "";
+          }}
           contentContainerStyle={containerStyle}
           // dismissable={false}
         >
@@ -262,16 +221,133 @@ export default function EditForm({ route, navigation }) {
             {nameField}
           </TextInput>
           <Text stye={{ margin: 5 }}>Kiểu :</Text>
-          <RadioButtonRN
+          {/* <RadioButtonRN
             data={formType}
             selectedBtn={(e) => setTypeField(e.label)}
-          />
+          /> */}
+          <RadioButtonGroup
+            containerStyle={{ marginBottom: 10 }}
+            selected={typeField}
+            onSelected={(value) => setTypeField(value)}
+            radioBackground="green"
+          >
+            <RadioButtonItem
+              value="Number"
+              style={{ margin: 10 }}
+              label={"Number"}
+            />
+            <RadioButtonItem
+              value="BarCode"
+              style={{ margin: 10 }}
+              label={"BarCode"}
+            />
+            <RadioButtonItem
+              value="Text"
+              style={{ margin: 10 }}
+              label={"Text"}
+            />
+            <RadioButtonItem
+              value="Date"
+              style={{ margin: 10 }}
+              label={"Date"}
+            />
+          </RadioButtonGroup>
           <Footer></Footer>
         </Modal>
       </Portal>
     );
   };
-
+  const ModalFieldEdit = () => {
+    return (
+      <Portal>
+        <Modal
+          visible={modalFieldVisible}
+          onDismiss={() => {
+            setModalFieldVisible(false);
+          }}
+          contentContainerStyle={containerStyle}
+        >
+          <Text>Tên trường :</Text>
+          <TextInput
+            onChangeText={(text) => (nameField = text)}
+            style={{
+              margin: 5,
+              backgroundColor: "white",
+              borderWidth: 1,
+              padding: 10,
+              height: 50,
+              marginHorizontal: 10,
+              borderRadius: 10,
+            }}
+          >
+            {nameField}
+          </TextInput>
+          <Text stye={{ margin: 5 }}>Kiểu :</Text>
+          <RadioButtonGroup
+            containerStyle={{ marginBottom: 10 }}
+            selected={current}
+            onSelected={(value) => setCurrent(value)}
+            radioBackground="green"
+          >
+            <RadioButtonItem
+              value="Number"
+              style={{ margin: 10 }}
+              label={"Number"}
+            />
+            <RadioButtonItem
+              value="BarCode"
+              style={{ margin: 10 }}
+              label={"BarCode"}
+            />
+            <RadioButtonItem
+              value="Text"
+              style={{ margin: 10 }}
+              label={"Text"}
+            />
+            <RadioButtonItem
+              value="Date"
+              style={{ margin: 10 }}
+              label={"Date"}
+            />
+          </RadioButtonGroup>
+          <TouchableOpacity
+            style={{
+              height: 50,
+              backgroundColor: "rgb(37, 150, 190)",
+              justifyContent: "center",
+              marginTop: 10,
+              borderRadius: 20,
+            }}
+            onPress={() => {
+              const newFormInputs = JSON.parse(JSON.stringify(formInput));
+              const index = newFormInputs.findIndex(
+                (e) => e.id == formInputSelected.id
+              );
+              newFormInputs.splice(index, 1);
+              newFormInputs.push({
+                id: formInputSelected.id,
+                label: nameField,
+                type: current,
+              });
+              setFormInput(newFormInputs);
+              setModalFieldVisible(false);
+            }}
+          >
+            <Text
+              style={{
+                color: "white",
+                textAlign: "center",
+                fontSize: 20,
+                fontWeight: "700",
+              }}
+            >
+              Lưu
+            </Text>
+          </TouchableOpacity>
+        </Modal>
+      </Portal>
+    );
+  };
   return (
     <Provider>
       <View style={styles.container}>
@@ -315,29 +391,73 @@ export default function EditForm({ route, navigation }) {
             </View>
             <ScrollView style={{ flex: 1 }}>
               <View>
-                <Text
-                  style={{
-                    fontSize: 25,
-                    fontWeight: "700",
-                    margin: 10,
-                    color: "white",
-                  }}
-                >
-                  Các trường:{" "}
-                </Text>
-                {formInput.map((e, index) => (
-                  <View
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Text
                     style={{
-                      backgroundColor: "white",
+                      fontSize: 25,
+                      fontWeight: "700",
                       margin: 10,
-                      padding: 10,
-                      borderRadius: 10,
+                      color: "white",
                     }}
                   >
-                    <Text>
-                      {index + 1}. Tên: {e?.label}
-                    </Text>
-                    <Text>Kiểu kiểu dữ liệu : {e?.type}</Text>
+                    Các trường:{" "}
+                  </Text>
+                  <TouchableOpacity onPress={() => onSubmit()}>
+                    <Image source={require("@assets/plus.png")} />
+                  </TouchableOpacity>
+                </View>
+
+                {formInput.map((e, index) => (
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <View
+                      style={{
+                        backgroundColor: "white",
+                        margin: 10,
+                        padding: 10,
+                        borderRadius: 10,
+                        flex: 1,
+                      }}
+                    >
+                      <Text>
+                        {index + 1}. Tên: {e?.label}
+                      </Text>
+                      <Text>Kiểu kiểu dữ liệu : {e?.type}</Text>
+                    </View>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setFormInputSelected(e);
+                        setModalFieldVisible(true);
+                        nameField = e.label;
+                        setCurrent(e.type);
+                      }}
+                    >
+                      <Image
+                        style={{ marginHorizontal: 5 }}
+                        source={require("@assets/pen1.png")}
+                        resizeMode="contain"
+                      />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        Alert.alert("Bạn Chắc Chắn Muốn Xoá FormInput", "", [
+                          {
+                            text: "Cancel",
+                            onPress: () => console.log("Cancel Pressed"),
+                            style: "cancel",
+                          },
+                          {
+                            text: "OK",
+                            onPress: () => onDeleteFormInput(e.id),
+                          },
+                        ]);
+                      }}
+                    >
+                      <Image
+                        style={{ marginHorizontal: 5 }}
+                        source={require("@assets/trash1.png")}
+                        resizeMode="contain"
+                      />
+                    </TouchableOpacity>
                   </View>
                 ))}
               </View>
@@ -435,7 +555,7 @@ export default function EditForm({ route, navigation }) {
             </ScrollView>
           </View>
           <ModalField />
-          {!modalVisible && <Footer></Footer>}
+          <ModalFieldEdit />
         </SafeAreaView>
       </View>
     </Provider>
@@ -452,5 +572,26 @@ const styles = StyleSheet.create({
   },
   checkbox: {
     alignSelf: "center",
+  },
+  header: {
+    height: 50,
+    backgroundColor: "rgb(37, 150, 190)",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 10,
+    marginTop: 29,
+  },
+  textHeader: {
+    color: "white",
+    textAlign: "center",
+    fontSize: 20,
+    fontWeight: "700",
+  },
+  footer: {
+    height: 50,
+    backgroundColor: "rgb(37, 150, 190)",
+    justifyContent: "center",
+    marginTop: 10,
   },
 });

@@ -49,7 +49,6 @@ export default function ListForm({ navigation }) {
         paddingHorizontal:5
       }}
     >
-      
       <Image
         source={require("@assets/background.jpeg")}
         style={StyleSheet.absoluteFillObject}

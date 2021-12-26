@@ -52,7 +52,7 @@ export default function Login({ navigation }) {
       alert(data.data);
     } else {
       dispathLogin(data.data)
-      navigation.navigate("ListForm");
+      navigation.replace("ListForm");
     }
     } catch (error) {
       alert(error)

@@ -17,6 +17,7 @@ import RadioButtonRN from "radio-buttons-react-native";
 import Checkbox from "expo-checkbox";
 import {createForms} from '@api'
 import {DeleteFormAction} from '../../redux/action'
+import RadioButtonGroup, { RadioButtonItem } from "expo-radio-button";
 
 var nameField = "";
 export default function CreateForms({navigation}) {
@@ -68,7 +69,7 @@ export default function CreateForms({navigation}) {
           marginTop:29
         }}
       >
-        <TouchableOpacity onPress={()=>navigation.goBack()}>
+        <TouchableOpacity onPress={()=>navigation.replace("ListForm")}>
         <Image source={require("@assets/back.png")} />
         </TouchableOpacity>
         <Text
@@ -94,8 +95,6 @@ export default function CreateForms({navigation}) {
     const groupR = JSON.parse(JSON.stringify(groupRole)).map((e) => {
       return e.groupsForm.filter((val) => val.selected === true);
     });
-
-    
     let body
     if (groupR.flat().length !== 0) {
       const groupsForm = groupR.flat().map((e) => {
@@ -126,8 +125,9 @@ export default function CreateForms({navigation}) {
         ],
       };
     }))
-     navigation.push('ListForm')
-     
+     navigation.replace('ListForm')
+     nameField="",
+     setName("")
    } catch (error) {
     alert('Ban thu lai sau')
    }
@@ -211,10 +211,37 @@ export default function CreateForms({navigation}) {
             {nameField}
           </TextInput>
           <Text stye={{ margin: 5 }}>Kiểu :</Text>
-          <RadioButtonRN
+          {/* <RadioButtonRN
             data={formType}
             selectedBtn={(e) => setTypeField(e.label)}
-          />
+          /> */}
+          <RadioButtonGroup
+            containerStyle={{ marginBottom: 10 }}
+            selected={typeField}
+            onSelected={(value) => setTypeField(value)}
+            radioBackground="green"
+          >
+            <RadioButtonItem
+              value="Number"
+              style={{ margin: 10 }}
+              label={"Number"}
+            />
+            <RadioButtonItem
+              value="BarCode"
+              style={{ margin: 10 }}
+              label={"BarCode"}
+            />
+            <RadioButtonItem
+              value="Text"
+              style={{ margin: 10 }}
+              label={"Text"}
+            />
+            <RadioButtonItem
+              value="Date"
+              style={{ margin: 10 }}
+              label={"Date"}
+            />
+          </RadioButtonGroup>
           <Footer></Footer>
         </Modal>
       </Portal>
@@ -251,6 +278,7 @@ export default function CreateForms({navigation}) {
                 Tên Biểu Mẫu:{" "}
               </Text>
               <TextInput
+              value={name}
                 onChangeText={(text) => setName(text)}
                 style={{
                   backgroundColor: "white",
