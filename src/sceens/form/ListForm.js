@@ -8,22 +8,28 @@ import {
   TouchableOpacity,
   Text,
   StatusBar,
-  Platform
+  Platform,
+  ActivityIndicator,
 } from "react-native";
-import { getForms } from "../../../api/index";
+import { getForms, searchForms } from "../../../api/index";
 import FlatlistComponent from "../../../component/ListCard";
 import { useSelector } from "react-redux";
 
 export default function ListForm({ navigation }) {
   const token = useSelector((store) => store.login);
-  const {reload} = useSelector((store) => store.formReducer);
+  const { reload } = useSelector((store) => store.formReducer);
   const [forms, setForms] = useState([]);
   const [textSearch, setTextSearch] = useState("");
+  const [isSearch, setIsSearch] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [loadingListForm, setLoadingForm] = useState(false);
   const getForm = async () => {
+    setLoading(true);
     if (token.token) {
-      const dataForms = await getForms(token.token);
+      const dataForms = await getForms(token.token, 1);
       setForms(dataForms.data);
     }
+    setLoading(false);
   };
   const renderStatusBar = () => {
     if (Platform.OS === "ios") {
@@ -34,19 +40,55 @@ export default function ListForm({ navigation }) {
           barStyle="light-content"
           backgroundColor="transparent"
           translucent={true}
-         
         />
       );
     }
   };
+  const loadMore = async () => {
+    if(isSearch){
+      setLoadingForm(true);
+      const dataForms = await searchForms(
+        token.token,
+        
+        Math.floor(forms.length / 10) + 1,
+        textSearch,
+      );
+      console.log(dataForms.data, Math.floor(forms.length / 10) + 1);
+      if (dataForms.data.length < 10 && forms.length % 10 != 0) {
+      } else {
+        const newData = [...forms, ...dataForms.data];
+        setForms(newData);
+      }
+      await setTimeout(() => setLoadingForm(false), 500);
+    }else {
+    if (!loadingListForm) {
+      setLoadingForm(true);
+      const dataForms = await getForms(
+        token.token,
+        Math.floor(forms.length / 10) + 1
+      );
+      if (dataForms.data.length < 10 && forms.length % 10 != 0) {
+      } else {
+        const newData = [...forms, ...dataForms.data];
+        setForms(newData);
+      }
+      await setTimeout(() => setLoadingForm(false), 500);
+    }}
+  };
   useEffect(() => {
     getForm();
-  }, [token.token,reload]);
+  }, [token.token, reload]);
+  const onSearch = async () => {
+    setIsSearch(true);
+    const data = await searchForms(token.token, 1, textSearch);
+    console.log(data.data);
+    setForms(data.data)
+  };
   return (
     <View
       style={{
         flex: 1,
-        paddingHorizontal:5
+        paddingHorizontal: 5,
       }}
     >
       <Image
@@ -54,9 +96,10 @@ export default function ListForm({ navigation }) {
         style={StyleSheet.absoluteFillObject}
         blurRadius={18}
       />
-      <SafeAreaView style={{flex:1,marginTop:20}}>
-      {renderStatusBar()}
+      <SafeAreaView style={{ flex: 1, marginTop: 20 }}>
+        {renderStatusBar()}
         <TextInput
+          value={textSearch}
           placeholder="Tìm kiếm biểu mẫu ..."
           style={{
             backgroundColor: "white",
@@ -65,6 +108,8 @@ export default function ListForm({ navigation }) {
             padding: 15,
             borderRadius: 20,
           }}
+          onChangeText={(text) => setTextSearch(text)}
+          onSubmitEditing={() => onSearch()}
         ></TextInput>
         <Text
           style={{
@@ -77,21 +122,35 @@ export default function ListForm({ navigation }) {
         >
           Danh sách biểu mẫu
         </Text>
-        <View style={{flex:1}}>
-        <FlatlistComponent data={forms} navigation={navigation}/>
+        <View style={{ flex: 1 }}>
+          {loading && (
+            <ActivityIndicator
+              style={{ justifyContent: "center" }}
+              size="large"
+              color="white"
+            />
+          )}
+          {!loading && (
+            <FlatlistComponent
+              data={forms}
+              navigation={navigation}
+              loadMore={loadMore}
+              loading={loadingListForm}
+            />
+          )}
         </View>
         <View>
-        <TouchableOpacity
-          style={styles.buttonfloat}
-          onPress={() => {
-            navigation.navigate("CreateForm");
-          }}
-        >
-          <Image
-            source={require("@assets/plus.png")}
-            style={styles.callPhone}
-          />
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.buttonfloat}
+            onPress={() => {
+              navigation.navigate("CreateForm");
+            }}
+          >
+            <Image
+              source={require("@assets/plus.png")}
+              style={styles.callPhone}
+            />
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     </View>

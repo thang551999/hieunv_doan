@@ -1,5 +1,5 @@
 import axios from "axios";
-const baseURL = "http://192.168.1.4:3000";
+const baseURL = "http://192.168.1.3:3000";
 axios.defaults.baseURL = baseURL;
 export const login = async (email, password) => {
   try {
@@ -73,9 +73,24 @@ export const resgister = async (body) => {
     }
   }
 };
-export const getForms = async (token) => {
+export const getForms = async (token,page) => {
+  console.log(page);
   try {
-    let res = await axios.get("/forms", {
+    let res = await axios.get(`/forms?page=${page}`, {
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    });
+    return res;
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
+
+export const searchForms = async (token,page,name) => {
+  console.log(page);
+  try {
+    let res = await axios.get(`/forms/search?page=${page}&&name=${name}`, {
       headers: {
         Authorization: "Bearer " + token,
       },

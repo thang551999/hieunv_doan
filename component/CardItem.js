@@ -88,7 +88,7 @@ const CardItemListView = ({
                 {item.item.name}
               </Text>
               <Text style={{ color: "gray", marginTop: 10 }} numberOfLines={1}>
-                {item.item.name}
+              Create by :{item.item?.userCreate.username}
               </Text>
               <Text style={{ color: "gray", marginTop: 5 }} numberOfLines={1}>
                 MTime: {new Date(item.item.createdAt).toLocaleString()}

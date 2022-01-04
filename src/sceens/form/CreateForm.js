@@ -9,25 +9,26 @@ import {
   TouchableOpacity,
   ScrollView,
   StatusBar,
-  Platform
+  Platform,
 } from "react-native";
-import { useSelector,useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { Modal, Portal, Button, Provider } from "react-native-paper";
 import RadioButtonRN from "radio-buttons-react-native";
 import Checkbox from "expo-checkbox";
-import {createForms} from '@api'
-import {DeleteFormAction} from '../../redux/action'
+import { createForms } from "@api";
+import { DeleteFormAction } from "../../redux/action";
 import RadioButtonGroup, { RadioButtonItem } from "expo-radio-button";
 
 var nameField = "";
-export default function CreateForms({navigation}) {
+export default function CreateForms({ navigation }) {
   const [name, setName] = useState("");
   const [formInput, setFormInput] = useState([]);
-  const { groups,token} = useSelector((store) => store.login);
+  const { groups, token } = useSelector((store) => store.login);
   const [modalVisible, setModalVisible] = useState(false);
   const [typeField, setTypeField] = useState("");
   const [value, setValueField] = useState("");
-  const [isSelected, setSelection] = useState(false);
+  const [textNameError, setTextNameError] = useState("");
+  const [textFormInputError, setTextFormInputError] = useState("");
   const [toggleCheckBox, setToggleCheckBox] = useState(false);
   const dispatch = useDispatch();
   const dispathReload = (note) => dispatch(DeleteFormAction(note));
@@ -41,8 +42,8 @@ export default function CreateForms({navigation}) {
         ],
       };
     })
-  ); 
-   const renderStatusBar = () => {
+  );
+  const renderStatusBar = () => {
     if (Platform.OS === "ios") {
       return <SafeAreaView style={styles.topSafeArea} />;
     } else {
@@ -56,7 +57,7 @@ export default function CreateForms({navigation}) {
     }
   };
 
-  const Header = ({navigation}) => {
+  const Header = ({ navigation }) => {
     return (
       <View
         style={{
@@ -66,11 +67,11 @@ export default function CreateForms({navigation}) {
           justifyContent: "space-between",
           alignItems: "center",
           padding: 10,
-          marginTop:29
+          marginTop: 29,
         }}
       >
-        <TouchableOpacity onPress={()=>navigation.replace("ListForm")}>
-        <Image source={require("@assets/back.png")} />
+        <TouchableOpacity onPress={() => navigation.replace("ListForm")}>
+          <Image source={require("@assets/back.png")} />
         </TouchableOpacity>
         <Text
           style={{
@@ -91,46 +92,52 @@ export default function CreateForms({navigation}) {
       </View>
     );
   };
-  const onCreateForm = async() => {
+  const onCreateForm = async () => {
     const groupR = JSON.parse(JSON.stringify(groupRole)).map((e) => {
       return e.groupsForm.filter((val) => val.selected === true);
     });
-    let body
+    let body;
     if (groupR.flat().length !== 0) {
       const groupsForm = groupR.flat().map((e) => {
         return { groups: e.groups, role: e.role };
       });
-       body ={
+      body = {
         name,
         formInput,
-        groupsForm
-      }
-    }else{
-       body ={
-        name,
-        formInput,
-      }
-    }
-   try {
-     const data = await createForms(token,body)
-     alert('Ban Tao thanh cong form ')
-     setName(''),
-     setFormInput([])
-     setGroupRole(groups.map((e) => {
-      return {
-        groupsForm: [
-          { groups: e.group.id, role: "G", selected: true },
-          { groups: e.group.id, role: "U", selected: false },
-          { groups: e.group.id, role: "D", selected: false },
-        ],
+        groupsForm,
       };
-    }))
-     navigation.replace('ListForm')
-     nameField="",
-     setName("")
-   } catch (error) {
-    alert('Ban thu lai sau')
-   }
+    } else {
+      body = {
+        name,
+        formInput,
+      };
+    }
+    try {
+      if (name&&formInput.length!=0) {
+        const data = await createForms(token, body);
+        alert("Ban Tao thanh cong form ");
+        setName(""), setFormInput([]);
+        setGroupRole(
+          groups.map((e) => {
+            return {
+              groupsForm: [
+                { groups: e.group.id, role: "G", selected: true },
+                { groups: e.group.id, role: "U", selected: false },
+                { groups: e.group.id, role: "D", selected: false },
+              ],
+            };
+          })
+        );
+        navigation.replace("ListForm");
+        (nameField = ""), setName("");
+      } else if(!name) {
+        setTextNameError("Tên biểu mẫu ko được để trống");
+      }else{
+        setTextFormInputError('Biểu mẫu phải điền ít nhất 1 trường')
+      }
+    } catch (error) {
+      alert("Ban thu lai sau");
+    }
   };
   const Footer = () => {
     return (
@@ -275,10 +282,10 @@ export default function CreateForms({navigation}) {
                   color: "white",
                 }}
               >
-                Tên Biểu Mẫu:{" "}
+                Tên Biểu Mẫu:
               </Text>
               <TextInput
-              value={name}
+                value={name}
                 onChangeText={(text) => setName(text)}
                 style={{
                   backgroundColor: "white",
@@ -288,6 +295,17 @@ export default function CreateForms({navigation}) {
                   borderRadius: 10,
                 }}
               ></TextInput>
+                <Text
+                  style={{
+                    fontSize: 15,
+                    fontWeight: "500",
+                    marginTop: 5,
+                    marginLeft: 5,
+                    color: "red",
+                  }}
+                >
+                  {textNameError}
+                </Text>
             </View>
             <ScrollView style={{ flex: 1 }}>
               <View>
@@ -300,6 +318,17 @@ export default function CreateForms({navigation}) {
                   }}
                 >
                   Các trường:{" "}
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 15,
+                    fontWeight: "500",
+                    marginTop: 5,
+                    marginLeft: 5,
+                    color: "red",
+                  }}
+                >
+                  {textFormInputError}
                 </Text>
                 {formInput.map((e, index) => (
                   <View
