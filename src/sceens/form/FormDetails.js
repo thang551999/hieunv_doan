@@ -35,6 +35,7 @@ export default function formDetails({ navigation, route }) {
   const [dataForm, setDataForm] = useState({});
   const [isDelete, setIsDete] = useState(false);
   const [isUpdate, setIsUpdate] = useState(false);
+  const [hasMore,setHasMore]=useState(false)
   const [groupRole, setGroupRole] = useState(
     groups.map((e) => {
       return {
@@ -185,6 +186,26 @@ export default function formDetails({ navigation, route }) {
               </ScrollView>
             </View>
           )}
+           <TouchableOpacity
+                style={styles.buttonSend}
+                onPress={() =>
+                  Alert.alert("Bạn chắc chắn muốn xoá biểu mẫu", "", [
+                    {
+                      text: "Cancel",
+                      onPress: () => console.log("Cancel Pressed"),
+                      style: "cancel",
+                    },
+                    { text: "OK", onPress: () => onDeleteForm() },
+                  ])
+                }
+              >
+                <Text style={styles.loginText}>Send</Text>
+                <Image
+                  style={{ marginLeft: 5 }}
+                  source={require("@assets/trash1.png")}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
           <View
             style={{ flexDirection: "row", justifyContent: "space-around" }}
           >
@@ -224,7 +245,9 @@ export default function formDetails({ navigation, route }) {
                 />
               </TouchableOpacity>
             )}
+            
           </View>
+         
         </SafeAreaView>
       </SafeAreaView>
     </Provider>
@@ -240,6 +263,21 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 20,
     marginHorizontal: 10,
+  },
+  buttonSend:{
+    marginVertical: 20,
+    marginHorizontal: 10,
+    // width: Constant.width7Unit,
+    height: 50,
+    // top: Constant.height3Unit,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgb(37, 150, 190)",
+    borderRadius: 30,
+
+    borderColor: "white",
+    borderWidth: 1,
+    flexDirection: "row",
   },
   buttonContainer: {
     flex: 1,

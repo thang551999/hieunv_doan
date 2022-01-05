@@ -23,6 +23,7 @@ export default function ListForm({ navigation }) {
   const [isSearch, setIsSearch] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingListForm, setLoadingForm] = useState(false);
+  const [hasMore,setHasMore]=useState(false)
   const getForm = async () => {
     setLoading(true);
     if (token.token) {
@@ -46,6 +47,7 @@ export default function ListForm({ navigation }) {
   };
   const loadMore = async () => {
     if(isSearch){
+      if (!loadingListForm&&!hasMore){
       setLoadingForm(true);
       const dataForms = await searchForms(
         token.token,
@@ -53,21 +55,23 @@ export default function ListForm({ navigation }) {
         Math.floor(forms.length / 10) + 1,
         textSearch,
       );
-      console.log(dataForms.data, Math.floor(forms.length / 10) + 1);
       if (dataForms.data.length < 10 && forms.length % 10 != 0) {
+        setHasMore(true)
       } else {
         const newData = [...forms, ...dataForms.data];
         setForms(newData);
       }
       await setTimeout(() => setLoadingForm(false), 500);
+    }
     }else {
-    if (!loadingListForm) {
+    if (!loadingListForm&&!hasMore) {
       setLoadingForm(true);
       const dataForms = await getForms(
         token.token,
         Math.floor(forms.length / 10) + 1
       );
       if (dataForms.data.length < 10 && forms.length % 10 != 0) {
+        setHasMore(true)
       } else {
         const newData = [...forms, ...dataForms.data];
         setForms(newData);
@@ -79,6 +83,7 @@ export default function ListForm({ navigation }) {
     getForm();
   }, [token.token, reload]);
   const onSearch = async () => {
+    setHasMore(false)
     setIsSearch(true);
     const data = await searchForms(token.token, 1, textSearch);
     console.log(data.data);

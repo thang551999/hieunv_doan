@@ -1,11 +1,25 @@
 import axios from "axios";
-const baseURL = "http://192.168.1.3:3000";
+const baseURL = "http://192.168.1.8:3000";
 axios.defaults.baseURL = baseURL;
 export const login = async (email, password) => {
   try {
     const res = await axios.post("/auth/login", {
       username: email,
       password: password,
+    });
+    return res;
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
+
+
+export const submitForm = async (token, form) => {
+  try {
+    const res = await axios.post("/forms/save", form,{
+      headers:{
+        Authorization: "Bearer " + token,
+      }
     });
     return res;
   } catch (error) {
