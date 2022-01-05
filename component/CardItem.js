@@ -70,9 +70,9 @@ const CardItemListView = ({
         {!loading && (
           <>
             <Image
-              style={{ height: 80, flex: 1, margin: 20 }}
+              style={{ height: 60, flex: 1, margin: 20 }}
               source={require("@assets/imageforms.png")}
-              resizeMode='contain'
+              resizeMode="contain"
             />
             <View
               style={{
@@ -85,13 +85,13 @@ const CardItemListView = ({
                 style={{ fontSize: 20, fontWeight: "700" }}
                 numberOfLines={1}
               >
-                {item.item.name}
+                {item.item?.name}
               </Text>
               <Text style={{ color: "gray", marginTop: 10 }} numberOfLines={1}>
-              Create by :{item.item?.userCreate.username}
+                Create by :{item.item?.userCreate?.username}
               </Text>
               <Text style={{ color: "gray", marginTop: 5 }} numberOfLines={1}>
-                MTime: {new Date(item.item.createdAt).toLocaleString()}
+                MTime: {new Date(item.item?.createdAt).toLocaleString()}
               </Text>
               {item.phone1 == "" ? (
                 <View></View>
@@ -144,7 +144,7 @@ export default CardItemListView;
 
 const styles = StyleSheet.create({
   container: {
-    height: 120,
+    height: 100,
     marginHorizontal: 15,
     marginVertical: 5,
     backgroundColor: "white",

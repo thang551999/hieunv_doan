@@ -113,7 +113,7 @@ export default function CreateForms({ navigation }) {
       };
     }
     try {
-      if (name&&formInput.length!=0) {
+      if (name && formInput.length != 0) {
         const data = await createForms(token, body);
         alert("Ban Tao thanh cong form ");
         setName(""), setFormInput([]);
@@ -130,10 +130,10 @@ export default function CreateForms({ navigation }) {
         );
         navigation.replace("ListForm");
         (nameField = ""), setName("");
-      } else if(!name) {
-        setTextNameError("Tên biểu mẫu ko được để trống");
-      }else{
-        setTextFormInputError('Biểu mẫu phải điền ít nhất 1 trường')
+      } else if (!name) {
+        setTextNameError("Tên biểu mẫu không được bỏ trống.");
+      } else {
+        setTextFormInputError("Biểu mẫu phải điền ít nhất 1 trường.");
       }
     } catch (error) {
       alert("Ban thu lai sau");
@@ -295,17 +295,17 @@ export default function CreateForms({ navigation }) {
                   borderRadius: 10,
                 }}
               ></TextInput>
-                <Text
-                  style={{
-                    fontSize: 15,
-                    fontWeight: "500",
-                    marginTop: 5,
-                    marginLeft: 5,
-                    color: "red",
-                  }}
-                >
-                  {textNameError}
-                </Text>
+              <Text
+                style={{
+                  fontSize: 15,
+                  fontWeight: "500",
+                  marginTop: 5,
+                  marginLeft: 5,
+                  color: "red",
+                }}
+              >
+                {textNameError}
+              </Text>
             </View>
             <ScrollView style={{ flex: 1 }}>
               <View>

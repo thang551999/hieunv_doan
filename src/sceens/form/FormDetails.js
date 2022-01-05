@@ -60,8 +60,8 @@ export default function formDetails({ navigation, route }) {
       const { formId } = route.params;
       const data = await getForm(token, formId);
       setDataForm(data.data);
-      const checkUpdate = data.data.groupsForm.find((e) => (e.role == "U"));
-      const checkDel = data.data.groupsForm.find((e) => (e.role == "D"));
+      const checkUpdate = data.data.groupsForm.find((e) => e.role == "U");
+      const checkDel = data.data.groupsForm.find((e) => e.role == "D");
       if (checkUpdate) {
         setIsUpdate(true);
       }
@@ -75,13 +75,7 @@ export default function formDetails({ navigation, route }) {
     if (Platform.OS === "ios") {
       return <SafeAreaView style={styles.topSafeArea} />;
     } else {
-      return (
-        <StatusBar
-          barStyle="light-content"
-          backgroundColor="rgb(37, 150, 190)"
-          translucent={true}
-        />
-      );
+      return <StatusBar barStyle="light-content" translucent={true} />;
     }
   };
   useEffect(() => {
@@ -93,23 +87,21 @@ export default function formDetails({ navigation, route }) {
       <View
         style={{
           height: 50,
-          backgroundColor: "rgb(37, 150, 190)",
           flexDirection: "row",
-          justifyContent: "space-between",
           alignItems: "center",
           padding: 10,
-          marginTop: 29,
         }}
       >
         <TouchableOpacity onPress={() => navigation.replace("ListForm")}>
-          <Image source={require("@assets/back.png")} />
+          <Image size={20} source={require("@assets/back.png")} />
         </TouchableOpacity>
         <Text
           style={{
             flex: 1,
             color: "white",
+            marginRight: 20,
             textAlign: "center",
-            fontSize: 20,
+            fontSize: 24,
             fontWeight: "700",
           }}
         >
@@ -147,13 +139,7 @@ export default function formDetails({ navigation, route }) {
           <Header navigation={navigation}></Header>
           {!_.isEmpty(dataForm) && (
             <View style={{ flex: 1, paddingHorizontal: 5 }}>
-              <View
-                style={{
-                  borderBottomColor: "rgb(37, 150, 190)",
-                  borderBottomWidth: 2,
-                  paddingBottom: 10,
-                }}
-              >
+              <View>
                 <Text
                   style={{
                     fontSize: 25,
@@ -162,89 +148,39 @@ export default function formDetails({ navigation, route }) {
                     color: "white",
                   }}
                 >
-                  Tên Biểu Mẫu: {dataForm.name}
+                  {dataForm.name}
                 </Text>
                 <Text
                   style={{
                     fontSize: 15,
                     fontWeight: "400",
+                    textAlign: "right",
                     margin: 10,
                     color: "white",
                   }}
                 >
-                  Ngày tạo biểu mẫu :{" "}
                   {new Date(dataForm.createdAt).toLocaleString()}
                 </Text>
-                {dataForm.createdAt != dataForm.updatedAt && (
-                  <Text
-                    style={{
-                      fontSize: 15,
-                      fontWeight: "400",
-                      margin: 10,
-                      color: "white",
-                    }}
-                  >
-                    Ngày cập nhật :{" "}
-                    {new Date(dataForm.updatedAt).toLocaleString()}
-                  </Text>
-                )}
               </View>
               <ScrollView style={{ flex: 1 }}>
                 <View>
-                  <Text
-                    style={{
-                      fontSize: 25,
-                      fontWeight: "700",
-                      margin: 10,
-                      color: "white",
-                    }}
-                  >
-                    Các trường:{" "}
-                  </Text>
                   {dataForm.formInput.map((e, index) => (
                     <View
                       style={{
                         backgroundColor: "white",
+                        flexDirection: "row",
+                        justifyContent: "space-between",
                         margin: 10,
                         padding: 10,
                         borderRadius: 10,
                       }}
                     >
-                      <Text>
-                        {index + 1}. Tên: {e?.label}
+                      <Text style={{ fontSize: 20 }}>{e?.label}</Text>
+                      <Text style={{ fontSize: 20, color: "blue" }}>
+                        {e?.type}
                       </Text>
-                      <Text>Kiểu kiểu dữ liệu : {e?.type}</Text>
                     </View>
                   ))}
-                </View>
-                <View>
-                  <Text
-                    style={{
-                      fontSize: 25,
-                      fontWeight: "700",
-                      margin: 10,
-                      color: "white",
-                    }}
-                  >
-                    Cấp quyền cho các Group :{" "}
-                  </Text>
-                  {dataForm.groupsForm.map((e, index) => {
-                    return (
-                      <View>
-                        <Text
-                          style={{
-                            fontSize: 20,
-                            fontWeight: "200",
-                            margin: 2,
-                            color: "white",
-                            paddingHorizontal: 5,
-                          }}
-                        >
-                          {e.groups.name} : {e.role}
-                        </Text>
-                      </View>
-                    );
-                  })}
                 </View>
               </ScrollView>
             </View>
