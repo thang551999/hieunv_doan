@@ -62,12 +62,10 @@ export default function CreateForms({ navigation }) {
       <View
         style={{
           height: 50,
-          backgroundColor: "rgb(37, 150, 190)",
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
           padding: 10,
-          marginTop: 29,
         }}
       >
         <TouchableOpacity onPress={() => navigation.replace("ListForm")}>
@@ -77,7 +75,8 @@ export default function CreateForms({ navigation }) {
           style={{
             color: "white",
             textAlign: "center",
-            fontSize: 20,
+            fontSize: 26,
+            marginLeft: 20,
             fontWeight: "700",
           }}
         >
@@ -115,7 +114,7 @@ export default function CreateForms({ navigation }) {
     try {
       if (name && formInput.length != 0) {
         const data = await createForms(token, body);
-        alert("Ban Tao thanh cong form ");
+        alert("Tạo biểu mẫu thành công.");
         setName(""), setFormInput([]);
         setGroupRole(
           groups.map((e) => {
@@ -136,7 +135,7 @@ export default function CreateForms({ navigation }) {
         setTextFormInputError("Biểu mẫu phải điền ít nhất 1 trường.");
       }
     } catch (error) {
-      alert("Ban thu lai sau");
+      alert("Có lỗi xảy ra! Vui lòng thử lại.");
     }
   };
   const Footer = () => {
@@ -149,13 +148,13 @@ export default function CreateForms({ navigation }) {
           marginTop: 10,
         }}
         onPress={() => {
-          if (modalVisible) {
+          if (modalVisible && nameField) {
             const formInputs = {
               label: nameField,
               value: value,
               type: typeField,
             };
-
+            setTextFormInputError("");
             setFormInput([...formInput, formInputs]);
             setModalVisible(false);
             nameField = "";
@@ -202,7 +201,7 @@ export default function CreateForms({ navigation }) {
           contentContainerStyle={containerStyle}
           // dismissable={false}
         >
-          <Text>Tên trường :</Text>
+          <Text style={{ fontSize: 20, color: "grey" }}>Tên thuộc tính</Text>
           <TextInput
             onChangeText={(text) => (nameField = text)}
             style={{
@@ -210,14 +209,16 @@ export default function CreateForms({ navigation }) {
               backgroundColor: "white",
               borderWidth: 1,
               padding: 10,
-              height: 50,
+              height: 40,
               marginHorizontal: 10,
               borderRadius: 10,
             }}
           >
             {nameField}
           </TextInput>
-          <Text stye={{ margin: 5 }}>Kiểu :</Text>
+          <Text style={{ marginTop: 10, fontSize: 20, color: "grey" }}>
+            Kiểu dữ liệu
+          </Text>
           {/* <RadioButtonRN
             data={formType}
             selectedBtn={(e) => setTypeField(e.label)}
@@ -276,21 +277,25 @@ export default function CreateForms({ navigation }) {
             >
               <Text
                 style={{
-                  fontSize: 25,
+                  fontSize: 20,
                   fontWeight: "700",
                   margin: 10,
                   color: "white",
                 }}
               >
-                Tên Biểu Mẫu:
+                Tên Biểu Mẫu
               </Text>
               <TextInput
                 value={name}
-                onChangeText={(text) => setName(text)}
+                onChangeText={(text) => {
+                  setName(text);
+                  setTextNameError("");
+                }}
                 style={{
                   backgroundColor: "white",
                   padding: 10,
                   height: 50,
+                  fontSize: 18,
                   marginHorizontal: 10,
                   borderRadius: 10,
                 }}
@@ -300,7 +305,7 @@ export default function CreateForms({ navigation }) {
                   fontSize: 15,
                   fontWeight: "500",
                   marginTop: 5,
-                  marginLeft: 5,
+                  marginLeft: 10,
                   color: "red",
                 }}
               >
